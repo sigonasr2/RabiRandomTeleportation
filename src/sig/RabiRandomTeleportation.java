@@ -34,6 +34,11 @@ public class RabiRandomTeleportation {
 	long mapAreaYAddress = 0;
 	long bunnyTeleportingAddress = 0;
 	
+	long MIN_ALIVE_TIME=4500;
+	long MAX_ALIVE_TIME=7500;
+	long LAST_TELEPORT_TIME=System.currentTimeMillis();
+	long NEXT_TELEPORT_TIME=(long)(Math.random()*(MAX_ALIVE_TIME-MIN_ALIVE_TIME))+MIN_ALIVE_TIME+LAST_TELEPORT_TIME;
+	
 	List<Location> loc = new ArrayList<Location>();
 	
 	private void CheckRabiRibiClient() {
@@ -201,8 +206,18 @@ public class RabiRandomTeleportation {
 		//writeFloatToMemory(entityArrayPtrOffset+0xC+0x4,5000);
 		//updateEventValue((short)166,16,12,15,7);
 		//20x11
-		TeleportBunnyToRandomLocation();
-		
+		//TeleportBunnyToRandomLocation();
+		while (true) {
+			if (System.currentTimeMillis()>NEXT_TELEPORT_TIME) {
+				TeleportBunnyToRandomLocation();
+				NEXT_TELEPORT_TIME=(long)(Math.random()*(MAX_ALIVE_TIME-MIN_ALIVE_TIME))+MIN_ALIVE_TIME+LAST_TELEPORT_TIME;
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	private void TeleportBunnyToRandomLocation() {
