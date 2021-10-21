@@ -1,8 +1,14 @@
 package sig;
 import sig.utils.PsapiTools;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
@@ -10,7 +16,6 @@ import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 
-import sig.modules.RabiRibi.MemoryOffset;
 import sig.utils.Module;
 
 public class RabiRandomTeleportation {
@@ -25,6 +30,11 @@ public class RabiRandomTeleportation {
 	long entityArrayPtr = 0;
 	long ErinaXAddress = 0; 
 	long ErinaYAddress = 0;
+	long mapAreaXAddress = 0;
+	long mapAreaYAddress = 0;
+	long bunnyTeleportingAddress = 0;
+	
+	List<Location> loc = new ArrayList<Location>();
 	
 	private void CheckRabiRibiClient() {
 		List<Integer> pids;
@@ -134,22 +144,92 @@ public class RabiRandomTeleportation {
 		writeShortToMemory(targetAddress,value);
 	}
 	
+	public static String[] readFromFile(String filename) {
+		File file = new File(filename);
+		//System.out.println(file.getAbsolutePath());
+		List<String> contents= new ArrayList<String>();
+		if (file.exists()) {
+			try(
+					FileReader fw = new FileReader(filename);
+				    BufferedReader bw = new BufferedReader(fw);)
+				{
+					String readline = bw.readLine();
+					do {
+						if (readline!=null) {
+							//System.out.println(readline);
+							contents.add(readline);
+							readline = bw.readLine();
+						}} while (readline!=null);
+					fw.close();
+					bw.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+		}
+		return contents.toArray(new String[contents.size()]);
+	}
+	
 	RabiRandomTeleportation() {
+		for (int i=0;i<9;i++) {
+			String[] data = readFromFile("map/area"+i+".txt");
+			for (String s : data) {
+				if (s.length()>0) {
+					String[] split = s.split(Pattern.quote(","));
+					if (split.length==3) {
+						if (Integer.parseInt(split[2])!=-1) {
+							loc.add(new Location(i,Integer.parseInt(split[0]),Integer.parseInt(split[1])));
+						}
+					}
+				}
+			}
+		}
+		//System.out.println(loc.size()+" locations loaded!");
+		
 		CheckRabiRibiClient();
 		//System.out.println(Arrays.toString(readBytesFromMemory(0xE47290,8)));
 		//System.out.println(Sprite1Address);
 		Sprite1Address = 0xE47290;
 		upperLeftRoomArray = Sprite1Address-0x93250;
+		mapAreaXAddress = 0xFFE9DC;
+		mapAreaYAddress = 0xD7999C;
 		//Room X:17, Room Y:13
 		entityArrayPtr = 0x96DA3C;
-		long entityArrayPtrOffset = readIntFromMemory(0x96DA3C)-rabiRibiMemOffset;
+		bunnyTeleportingAddress = 0xA73054;
 		System.out.println("Erina X:"+readFloatFromPointer(0xC,entityArrayPtr));
 		System.out.println("Erina Y:"+readFloatFromPointer(0xC+0x4,entityArrayPtr));
-		writeFloatToMemory(entityArrayPtrOffset+0xC+0x4,5000);
+		System.out.println("Map: "+readIntFromMemory(mapAreaXAddress)+","+readIntFromMemory(mapAreaYAddress));
+		//writeFloatToMemory(entityArrayPtrOffset+0xC+0x4,5000);
 		//updateEventValue((short)166,16,12,15,7);
+		//20x11
+		TeleportBunnyToRandomLocation();
 		
 	}
 	
+	private void TeleportBunnyToRandomLocation() {
+		Location chosenLoc = loc.get((int)(Math.random()*loc.size()));
+		long entityArrayPtrOffset = readIntFromMemory(0x96DA3C)-rabiRibiMemOffset;
+		for (int x=0;x<20;x++) {
+			for (int y=0;y<11;y++) {
+				updateEventValue((short)(161+chosenLoc.area),readIntFromMemory(mapAreaXAddress),readIntFromMemory(mapAreaYAddress),x,y);
+			}
+		}
+		do {
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		} while (readIntFromMemory(bunnyTeleportingAddress)!=420);
+		
+		//Thread.sleep(1000);
+		
+		System.out.println(chosenLoc);
+		
+		//1280 width per room, 800 height per room.
+		writeFloatToMemory(entityArrayPtrOffset+0xC,1280*chosenLoc.roomX+640);
+		writeFloatToMemory(entityArrayPtrOffset+0xC+0x4,720*chosenLoc.roomY-360);
+	}
+
 	public static void main(String[] args) {
 		RabiRandomTeleportation app = new RabiRandomTeleportation();
 	}
