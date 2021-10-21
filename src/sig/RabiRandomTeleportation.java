@@ -36,8 +36,8 @@ public class RabiRandomTeleportation {
 	long areaAddress = 0;
 	long fightingBossAddress = 0;
 	
-	long MIN_ALIVE_TIME=4500;
-	long MAX_ALIVE_TIME=7500;
+	long MIN_ALIVE_TIME=45000;
+	long MAX_ALIVE_TIME=75000;
 	long LAST_TELEPORT_TIME=System.currentTimeMillis();
 	long NEXT_TELEPORT_TIME=(long)(Math.random()*(MAX_ALIVE_TIME-MIN_ALIVE_TIME))+MIN_ALIVE_TIME+LAST_TELEPORT_TIME;
 	
@@ -204,12 +204,12 @@ public class RabiRandomTeleportation {
 		bunnyTeleportingAddress = 0xA73054;
 		fightingBossAddress = 0xA72E08;
 		areaAddress = 0xA600AC;
-		System.out.println("Erina X:"+readFloatFromPointer(0xC,entityArrayPtr));
+		/*System.out.println("Erina X:"+readFloatFromPointer(0xC,entityArrayPtr));
 		System.out.println("Erina Y:"+readFloatFromPointer(0xC+0x4,entityArrayPtr));
 		System.out.println("Map: "+readIntFromMemory(mapAreaXAddress)+","+readIntFromMemory(mapAreaYAddress));
 		long entityArrayPtrOffset = readIntFromMemory(0x96DA3C)-rabiRibiMemOffset;
 		writeFloatToMemory(entityArrayPtrOffset+0xC,9600);
-		writeFloatToMemory(entityArrayPtrOffset+0xC+0x4,9240);
+		writeFloatToMemory(entityArrayPtrOffset+0xC+0x4,9240);*/
 		//updateEventValue((short)166,16,12,15,7);
 		//20x11
 		//TeleportBunnyToRandomLocation();
@@ -220,6 +220,7 @@ public class RabiRandomTeleportation {
 				LAST_TELEPORT_TIME=System.currentTimeMillis();
 				NEXT_TELEPORT_TIME=(long)(Math.random()*(MAX_ALIVE_TIME-MIN_ALIVE_TIME))+MIN_ALIVE_TIME+LAST_TELEPORT_TIME;
 				//System.out.println(NEXT_TELEPORT_TIME);
+				 
 			}
 			try {
 				Thread.sleep(1000);
@@ -248,7 +249,7 @@ public class RabiRandomTeleportation {
 		} while (tries<200&&readIntFromMemory(areaAddress)!=chosenLoc.area);
 		
 		try {
-			Thread.sleep(500);
+			Thread.sleep(200);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
