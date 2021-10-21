@@ -35,6 +35,8 @@ public class RabiRandomTeleportation {
 	long bunnyTeleportingAddress = 0;
 	long areaAddress = 0;
 	long fightingBossAddress = 0;
+	long goldenCarrotAddress = 0;
+	boolean hasGoldenCarrot=false;
 	
 	long MIN_ALIVE_TIME=45000;
 	long MAX_ALIVE_TIME=75000;
@@ -204,6 +206,7 @@ public class RabiRandomTeleportation {
 		bunnyTeleportingAddress = 0xA73054;
 		fightingBossAddress = 0xA72E08;
 		areaAddress = 0xA600AC;
+		goldenCarrotAddress = 0xD63348;
 		/*System.out.println("Erina X:"+readFloatFromPointer(0xC,entityArrayPtr));
 		System.out.println("Erina Y:"+readFloatFromPointer(0xC+0x4,entityArrayPtr));
 		System.out.println("Map: "+readIntFromMemory(mapAreaXAddress)+","+readIntFromMemory(mapAreaYAddress));
@@ -214,13 +217,21 @@ public class RabiRandomTeleportation {
 		//20x11
 		//TeleportBunnyToRandomLocation();
 		while (true) {
-			System.out.println(System.currentTimeMillis()+"/"+NEXT_TELEPORT_TIME);
+			if (readIntFromMemory(goldenCarrotAddress)==1&&!hasGoldenCarrot) {
+				hasGoldenCarrot=true;
+			} else
+			if (readIntFromMemory(goldenCarrotAddress)==0&&hasGoldenCarrot) {
+				hasGoldenCarrot=false;
+				NEXT_TELEPORT_TIME+=60000;
+				System.out.println("Golden carrot consumed! Extra minute added!");
+			}
 			if (System.currentTimeMillis()>NEXT_TELEPORT_TIME&&readIntFromMemory(fightingBossAddress)!=1) {
 				TeleportBunnyToRandomLocation();
 				LAST_TELEPORT_TIME=System.currentTimeMillis();
 				NEXT_TELEPORT_TIME=(long)(Math.random()*(MAX_ALIVE_TIME-MIN_ALIVE_TIME))+MIN_ALIVE_TIME+LAST_TELEPORT_TIME;
 				//System.out.println(NEXT_TELEPORT_TIME);
-				 
+			} else {
+				System.out.println("Time until next teleport: "+(int)Math.ceil((NEXT_TELEPORT_TIME-System.currentTimeMillis())/1000)+"s");
 			}
 			try {
 				Thread.sleep(1000);
