@@ -33,6 +33,8 @@ public class RabiRandomTeleportation {
 	long mapAreaXAddress = 0;
 	long mapAreaYAddress = 0;
 	long bunnyTeleportingAddress = 0;
+	long areaAddress = 0;
+	long fightingBossAddress = 0;
 	
 	long MIN_ALIVE_TIME=4500;
 	long MAX_ALIVE_TIME=7500;
@@ -200,17 +202,24 @@ public class RabiRandomTeleportation {
 		//Room X:17, Room Y:13
 		entityArrayPtr = 0x96DA3C;
 		bunnyTeleportingAddress = 0xA73054;
+		fightingBossAddress = 0xA72E08;
+		areaAddress = 0xA600AC;
 		System.out.println("Erina X:"+readFloatFromPointer(0xC,entityArrayPtr));
 		System.out.println("Erina Y:"+readFloatFromPointer(0xC+0x4,entityArrayPtr));
 		System.out.println("Map: "+readIntFromMemory(mapAreaXAddress)+","+readIntFromMemory(mapAreaYAddress));
-		//writeFloatToMemory(entityArrayPtrOffset+0xC+0x4,5000);
+		long entityArrayPtrOffset = readIntFromMemory(0x96DA3C)-rabiRibiMemOffset;
+		writeFloatToMemory(entityArrayPtrOffset+0xC,9600);
+		writeFloatToMemory(entityArrayPtrOffset+0xC+0x4,9240);
 		//updateEventValue((short)166,16,12,15,7);
 		//20x11
 		//TeleportBunnyToRandomLocation();
 		while (true) {
-			if (System.currentTimeMillis()>NEXT_TELEPORT_TIME) {
+			System.out.println(System.currentTimeMillis()+"/"+NEXT_TELEPORT_TIME);
+			if (System.currentTimeMillis()>NEXT_TELEPORT_TIME&&readIntFromMemory(fightingBossAddress)!=1) {
 				TeleportBunnyToRandomLocation();
+				LAST_TELEPORT_TIME=System.currentTimeMillis();
 				NEXT_TELEPORT_TIME=(long)(Math.random()*(MAX_ALIVE_TIME-MIN_ALIVE_TIME))+MIN_ALIVE_TIME+LAST_TELEPORT_TIME;
+				//System.out.println(NEXT_TELEPORT_TIME);
 			}
 			try {
 				Thread.sleep(1000);
@@ -228,21 +237,29 @@ public class RabiRandomTeleportation {
 				updateEventValue((short)(161+chosenLoc.area),readIntFromMemory(mapAreaXAddress),readIntFromMemory(mapAreaYAddress),x,y);
 			}
 		}
+		int tries=0;
 		do {
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-		} while (readIntFromMemory(bunnyTeleportingAddress)!=420);
+			tries++;
+		} while (tries<200&&readIntFromMemory(areaAddress)!=chosenLoc.area);
 		
-		//Thread.sleep(1000);
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		
-		System.out.println(chosenLoc);
-		
-		//1280 width per room, 800 height per room.
-		writeFloatToMemory(entityArrayPtrOffset+0xC,1280*chosenLoc.roomX+640);
-		writeFloatToMemory(entityArrayPtrOffset+0xC+0x4,720*chosenLoc.roomY-360);
+		if (tries<200) {
+			System.out.println(chosenLoc);
+			
+			//1280 width per room, 800 height per room.
+			writeFloatToMemory(entityArrayPtrOffset+0xC,1280*chosenLoc.roomX+640);
+			writeFloatToMemory(entityArrayPtrOffset+0xC+0x4,720*chosenLoc.roomY+600);
+		}
 	}
 
 	public static void main(String[] args) {
