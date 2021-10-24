@@ -207,13 +207,14 @@ public class RabiRandomTeleportation {
 		fightingBossAddress = 0xA72E08;
 		areaAddress = 0xA600AC;
 		goldenCarrotAddress = 0xD63348;
-		/*System.out.println("Erina X:"+readFloatFromPointer(0xC,entityArrayPtr));
+		System.out.println("Erina X:"+readFloatFromPointer(0xC,entityArrayPtr));
 		System.out.println("Erina Y:"+readFloatFromPointer(0xC+0x4,entityArrayPtr));
 		System.out.println("Map: "+readIntFromMemory(mapAreaXAddress)+","+readIntFromMemory(mapAreaYAddress));
 		long entityArrayPtrOffset = readIntFromMemory(0x96DA3C)-rabiRibiMemOffset;
-		writeFloatToMemory(entityArrayPtrOffset+0xC,9600);
-		writeFloatToMemory(entityArrayPtrOffset+0xC+0x4,9240);*/
-		//updateEventValue((short)166,16,12,15,7);
+		//writeFloatToMemory(entityArrayPtrOffset+0xC,11777);
+		//writeFloatToMemory(entityArrayPtrOffset+0xC+0x4,9097);
+		updateEventValue((short)570,11,6,2,7);
+		updateEventValue((short)3,11,6,2,6);
 		//20x11
 		//TeleportBunnyToRandomLocation();
 		while (true) {
